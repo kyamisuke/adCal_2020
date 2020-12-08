@@ -2,7 +2,6 @@ var socket;
 var dogImg, rabbitImg, rengaImg;
 const imgSize = 70;
 var dogPosition, rengaPosition;
-var cam;
 var camPosition;
 
 function preload() {
@@ -27,9 +26,6 @@ function setup() {
 
     socket.on('pads', newOperated);
 
-    // cam = createCamera();
-    // setCamera(cam);
-    // cam.lookAt(0, 0, 0);
     camPosition = new p5.Vector(0, 0, (height / 2) / tan(PI / 6));
     camera(camPosition.x, camPosition.y, camPosition.z, 0, 0, 0, 0, 1, 0);
 }
@@ -49,6 +45,14 @@ function controllerOperated(pads) {
     if (dogPosition.x < -width/2) {
         dogPosition.x = -width/2;
     }
+    camPosition.add(Lx,0,0);
+    if (camPosition.x < 0) {
+        camPosition.x = 0;
+    } else if (dogPosition.x < -100) {
+        camPosition.x = 0;  
+    }
+    camera(camPosition.x, camPosition.y, camPosition.z, camPosition.x, 0, 0, 0, 1, 0);
+
     image(dogImg,dogPosition.x ,dogPosition.y,imgSize,imgSize);
     for (let i=0; i < 5; i++) {
         image(rengaImg,-width/2+i*250,height/2-25,250,50);
