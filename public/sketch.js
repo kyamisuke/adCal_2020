@@ -2,14 +2,6 @@ var socket;
 var dogImg, rabbitImg, rengaImg;
 const imgSize = 70;
 var dogPosition, rengaPosition;
-var buttonNames = [
-  "×", "○", "□", "△",
-  "L1", "R1", "L2", "R2",
-  "SH", "OP",
-  "L3", "R3",
-  "↑", "↓", "←", "→",
-  "PS", "TP"
-];
 
 function preload() {
     dogImg = loadImage("https://2.bp.blogspot.com/-6HhC2AY0eps/XLAdB1LYatI/AAAAAAABSU8/6mvfk-9iyAA0mK8q8IKI4tNqTFt0Y1IDgCLcBGAs/s400/fantsy_haneinu.png");
@@ -25,26 +17,17 @@ function setup() {
     imageMode(CENTER)
 
     dogPosition =new p5.Vector(-100,-imgSize);
-    rabbitPosition =new p5.Vector(-100,260-imgSize);
+    rabbitPosition =new p5.Vector(-100,245-imgSize);
     rengaPosition = new p5.Vector(0, -25);
 
-    socket = io.connect('http://localhost:3000');
+    socket = io.connect('http://192.168.0.12:3000');
+    // socket = io.connect('http://localhost:3000');
+
     socket.on('pads', newOperated);
 }
 
 function controllerOperated(pads) {
-    console.log(pads);
-
-    var but = [];
-    for (var i = 0; i < pads.buttons.length; i++) {
-      var val = pads.buttons[i];
-      var pressed = val == 1.0;
-      if (typeof(val) == "object") {
-        pressed = val.pressed;
-        val = val.value;
-      }
-      but[i] = val;
-    }
+    console.log("controllerOperated");
 
     var axes = pads.axes;
 
@@ -61,37 +44,21 @@ function controllerOperated(pads) {
         image(rengaImg,-width/2+i*250,0,250,50);
     }
 
+    let data = {
+        Lx: Lx,
+        Ly: Ly,
+        Rx: Rx,
+        Ry: Ry
+    }
+
     socket.emit('pads', pads);
 }
 
 function newOperated(data) {
-    console.log(data);
+    console.log("newOperated");
 
-    var but = [];
-    for (var i = 0; i < pads.buttons.length; i++) {
-      var val = pads.buttons[i];
-      var pressed = val == 1.0;
-      if (typeof(val) == "object") {
-        pressed = val.pressed;
-        val = val.value;
-      }
-      but[i] = val;
-    }
-
-    var axes = pads.axes;
-
-    // スティックの位置をマッピング
-    var Lx = axes[0]*5;//map(axes[0], -1, 1, 25, 325);
-    var Ly = axes[1]*5;//map(axes[1], -1, 1, 25, 325);
-    var Rx = axes[2]*5;//map(axes[2], -1, 1, 375, 675);
-    var Ry = axes[3]*5;//map(axes[3], -1, 1, 25, 325);
-
-    rabbitPosition.add(Lx,0);
+    rabbitPosition.add(data.Lx, 0);
     image(rabbitImg,rabbitPosition.x,rabbitPosition.y,imgSize,imgSize);
-    for (let i=0; i < 5; i++) {
-        image(rengaImg,-width/2+i*250,height/2-25,250,50);
-        image(rengaImg,-width/2+i*250,0,250,50);
-    }
 }
 
 function draw() {
