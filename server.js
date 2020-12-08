@@ -18,6 +18,7 @@ function newConnection(socket) {
     console.log('new connection: ' + socket.id)
 
     socket.on('pads', controllerMsg);
+    socket.on('match', matchMsg);
 
     function controllerMsg(data) {
         socket.broadcast.emit('pads', data);
