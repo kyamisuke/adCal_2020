@@ -22,7 +22,6 @@ function newConnection(socket) {
 
     function controllerMsg(data) {
         socket.broadcast.emit('pads', data);
-        console.log("controllerMsg");
     }
 
     function matchMsg(data) {

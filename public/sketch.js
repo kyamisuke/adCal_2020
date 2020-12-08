@@ -13,6 +13,7 @@ var isLose = false;
 var isWin = false;
 
 function preload() {
+    // 各画像をイラストやからダウンロード
     dogImg = loadImage("https://2.bp.blogspot.com/-6HhC2AY0eps/XLAdB1LYatI/AAAAAAABSU8/6mvfk-9iyAA0mK8q8IKI4tNqTFt0Y1IDgCLcBGAs/s400/fantsy_haneinu.png");
     rabbitImg = loadImage("https://2.bp.blogspot.com/-gHwTBItyjQw/WhUh45bw5QI/AAAAAAABIOQ/3n3Y3FffZpMrX1Fbf8ptIMwUAN0p04amgCLcBGAs/s400/fantasy_wolpertinger.png");
     rengaImg = loadImage("https://2.bp.blogspot.com/-T5MY0mvl9Aw/UsZstBkZFoI/AAAAAAAAcpc/rnG_UJLfJIM/s600/renga_pattern.png");
@@ -34,17 +35,24 @@ function setup() {
     rabbitPosition =new p5.Vector(-100,245-imgSize);
     rengaPosition = new p5.Vector(0, -25);
 
+    // ロードした木関連の画像を配列にまとめる
     treeArray = [needleTreeImg, wideTreeimg, redTreeImg, orangeTreeImg, yellowTreeImg];
 
+    // IPアドレスに接続
+    // localhostでもいいが。自分のPC内でしかやりとりできない
+    // 他のPCと接続する際には、自分か相手か、どちらかのIPアドレスに合わせる必要がある
     socket = io.connect('http://192.168.0.12:3000');
     // socket = io.connect('http://localhost:3000');
 
+    // 受信用のsocketをopen
+    // 第一引数の名前のデータを受け取ったとき、第二引数の関数がcallbackされる
     socket.on('pads', newOperated);
     socket.on('match', result);
 
     camPosition = new p5.Vector(0, 0, (height / 2) / tan(PI / 6));
     camera(camPosition.x, camPosition.y, camPosition.z, 0, 0, 0, 0, 1, 0);
 
+    // ハチをランダムで追加
     for (let i=0; i < 20; i++) {
         if (random(100) < 30) {
             let p = new p5.Vector(-width/2+i*250, -100);
@@ -57,6 +65,8 @@ function setup() {
     }
 }
 
+// コントローラーを操作した時に発動する関数
+// 発動と同時に通信相手に'pads'dataを送信
 function controllerOperated(pads) {
     var but = [];
     for (var i = 0; i < pads.buttons.length; i++) {
@@ -112,10 +122,13 @@ function controllerOperated(pads) {
     socket.emit('pads', data);
 }
 
+// 通信相手のコンピューターがコントローラーを操作した時に発動する関数
 function newOperated(data) {
     rabbitPosition = data;
 }
 
+// 自分がハチと接触した時に発動する関数
+// 発動と同時に通信相手に'match'dataを送信
 function youLose() {
     isLose = true;
 
@@ -126,6 +139,7 @@ function youLose() {
     socket.emit('match', data);
 }
 
+// 通信相手のコンピューターがハチと接触した時に発動する関数
 function result(data) {
     if (data.match == "is Lose") {
         isWin = true;
@@ -136,6 +150,7 @@ function draw() {
     randomSeed(39);
     background(16*15+9, 16*14, 16*10+14);
 
+    // PS4のコントローラーから操作を取得するための文
     var pads = navigator.getGamepads ? navigator.getGamepads() :
     (navigator.webkitGetGamepads ? navigator.webkitGetGamepads : []);
 
@@ -146,29 +161,30 @@ function draw() {
 
     image(rabbitImg,rabbitPosition.x,rabbitPosition.y,imgSize,imgSize);
 
+    // 木による背景を表示
     for (let i=0; i < 20; i++) {
         let n = int(random(treeArray.length));
         image(treeArray[n], -width/2+i*250, 130, 100, 200);
         n = int(random(treeArray.length));
         image(treeArray[n], -width/2+i*250, -110, 100, 200);
     }
+    // ハチを表示
     for (let i=0; i<topBeePosition.length; i++) {
         image(beeImg,topBeePosition[i].x,topBeePosition[i].y+sin(frameCount*0.05)*30,imgSize,imgSize);
     }
-    // for (let i=0; i<bottomBeePostion.length; i++) {
-    //     image(beeImg,bottomBeePostion[i].x,bottomBeePostion[i].y+sin(frameCount*0.05)*30,imgSize,imgSize);
-    // }
+    // ハチとの接触判定
     for (let i=0; i<topBeePosition.length; i++) {
         let d = p5.Vector.dist(topBeePosition[i], dogPosition);
         if (d < 50) {
             youLose();
         }
     }
+    // レンガを表示
     for (let i=0; i < 20; i++) {
         image(rengaImg,-width/2+i*250,height/2-25,250,50);
         image(rengaImg,-width/2+i*250,0,250,50);
     }
-
+    // 負け判定を受け取ったら負け画像を表示
     if (isLose == true) {
         fill(0, 100);
         noStroke();
@@ -176,6 +192,7 @@ function draw() {
         rect(dogPosition.x+100,0,width,height);
         image(loseImg,dogPosition.x+100,0,height,height);
     }
+    // 勝ち判定を受け取ったら勝ち画像を表示
     if (isWin == true) {
         fill(0, 100);
         noStroke();
