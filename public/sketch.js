@@ -45,20 +45,18 @@ function controllerOperated(pads) {
     }
 
     let data = {
-        Lx: Lx,
-        Ly: Ly,
-        Rx: Rx,
-        Ry: Ry
+        x: dogPosition.x,
+        y: dogPosition.y
     }
 
-    socket.emit('pads', pads);
+    socket.emit('pads', data);
 }
 
 function newOperated(data) {
     console.log("newOperated");
+    console.log(data);
 
-    rabbitPosition.add(data.Lx, 0);
-    image(rabbitImg,rabbitPosition.x,rabbitPosition.y,imgSize,imgSize);
+    rabbitPosition = data;
 }
 
 function draw() {
@@ -72,6 +70,5 @@ function draw() {
         controllerOperated(pads);
     }
 
-    // image(rengaImg,0,height/2-50,width*2,100);
-    // image(rengaImg,0,-50,width*2,100);
+    image(rabbitImg,rabbitPosition.x,rabbitPosition.y,imgSize,imgSize);
 }
