@@ -49,15 +49,11 @@ function controllerOperated(pads) {
     if (camPosition.x < 0) {
         camPosition.x = 0;
     } else if (dogPosition.x < -100) {
-        camPosition.x = 0;  
+        camPosition.x = 0;
     }
     camera(camPosition.x, camPosition.y, camPosition.z, camPosition.x, 0, 0, 0, 1, 0);
 
     image(dogImg,dogPosition.x ,dogPosition.y,imgSize,imgSize);
-    for (let i=0; i < 5; i++) {
-        image(rengaImg,-width/2+i*250,height/2-25,250,50);
-        image(rengaImg,-width/2+i*250,0,250,50);
-    }
 
     let data = {
         x: dogPosition.x,
@@ -86,4 +82,9 @@ function draw() {
     }
 
     image(rabbitImg,rabbitPosition.x,rabbitPosition.y,imgSize,imgSize);
+
+    for (let i=0; i < 5; i++) {
+        image(rengaImg,-width/2+i*250,height/2-25,250,50);
+        image(rengaImg,-width/2+i*250,0,250,50);
+    }
 }
