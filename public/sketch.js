@@ -58,7 +58,6 @@ function setup() {
 }
 
 function controllerOperated(pads) {
-    console.log("controllerOperated");
     var but = [];
     for (var i = 0; i < pads.buttons.length; i++) {
       var val = pads.buttons[i];
@@ -114,22 +113,21 @@ function controllerOperated(pads) {
 }
 
 function newOperated(data) {
-    console.log("newOperated");
-    console.log(data);
-
     rabbitPosition = data;
 }
 
 function youLose() {
     isLose = true;
 
-    let data = "is Lose";
+    let data = {
+        match: "is Lose"
+    };
 
-    socket.emit('match', isLose);
+    socket.emit('match', data);
 }
 
 function result(data) {
-    if (data == "is Lose") {
+    if (data.match == "is Lose") {
         isWin = true;
     }
 }
