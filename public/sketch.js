@@ -1,9 +1,12 @@
 var socket;
-var dogImg, rabbitImg, rengaImg, needleTreeImg, wideTreeimg, redTreeImg, orangeTreeImg, yellowTreeImg;
+var dogImg, rabbitImg, rengaImg, needleTreeImg, wideTreeimg, redTreeImg, orangeTreeImg, yellowTreeImg, beeImg;
 const imgSize = 70;
 var dogPosition, rengaPosition;
 var camPosition;
 var treeArray;
+var gravity = 1;
+var velocity = 0;
+var lift = -3;
 
 function preload() {
     dogImg = loadImage("https://2.bp.blogspot.com/-6HhC2AY0eps/XLAdB1LYatI/AAAAAAABSU8/6mvfk-9iyAA0mK8q8IKI4tNqTFt0Y1IDgCLcBGAs/s400/fantsy_haneinu.png");
@@ -14,13 +17,11 @@ function preload() {
     redTreeImg = loadImage('https://2.bp.blogspot.com/-7wtEd3NHAtc/V9vCvh0PuqI/AAAAAAAA-AE/Twoxt-oM-kcEGHLi0ht7M4RpGR1hdZMfgCLcB/s300/tree_simple5.png');
     orangeTreeImg = loadImage('https://2.bp.blogspot.com/-erVDEPQyD8s/V9vCvycBFkI/AAAAAAAA-AI/AN9Qhdv66lgInYybTTJ_U_m_gcow4t4wQCLcB/s300/tree_simple6.png');
     yellowTreeImg = loadImage('https://4.bp.blogspot.com/-IjzeeTODMe4/V9vCvAoWTUI/AAAAAAAA-AA/AEow268A8TshxTeKNZ05Prhl48qd4r8UgCLcB/s300/tree_simple4.png');
+    beeImg = loadImage('https://1.bp.blogspot.com/-YoKsv_evnNM/WaPvcNrj5zI/AAAAAAABGMs/8mlxQhZyRuU_CoPJiSzJ67ir1CNfAulvQCLcBGAs/s400/bug_hachi_doku.png');
 }
 
 function setup() {
     createCanvas(960, 520, WEBGL);
-    background(51);
-    strokeJoin(ROUND);
-    textAlign(CENTER, CENTER);
     imageMode(CENTER)
 
     dogPosition =new p5.Vector(-100,-imgSize);
@@ -40,6 +41,23 @@ function setup() {
 
 function controllerOperated(pads) {
     console.log("controllerOperated");
+    var but = [];
+    for (var i = 0; i < pads.buttons.length; i++) {
+      var val = pads.buttons[i];
+      var pressed = val == 1.0;
+      if (typeof(val) == "object") {
+        pressed = val.pressed;
+        val = val.value;
+      }
+      but[i] = val;
+    }
+
+    if (but[1] == 1) {
+        velocity += lift;
+    }
+    velocity += gravity;
+    velocity *= 0.9;
+    dogPosition.y += velocity;
 
     var axes = pads.axes;
 
@@ -53,6 +71,9 @@ function controllerOperated(pads) {
     if (dogPosition.x < -width/2) {
         dogPosition.x = -width/2;
     }
+    if (dogPosition.y > -imgSize) {
+        dogPosition.y = -imgSize;
+    }
     camPosition.add(Lx,0,0);
     if (camPosition.x < 0) {
         camPosition.x = 0;
@@ -65,7 +86,7 @@ function controllerOperated(pads) {
 
     let data = {
         x: dogPosition.x,
-        y: dogPosition.y
+        y: dogPosition.y,
     }
 
     socket.emit('pads', data);
@@ -79,6 +100,7 @@ function newOperated(data) {
 }
 
 function draw() {
+    randomSeed(39);
     background(16*15+9, 16*14, 16*10+14);
 
     var pads = navigator.getGamepads ? navigator.getGamepads() :
@@ -92,11 +114,20 @@ function draw() {
     image(rabbitImg,rabbitPosition.x,rabbitPosition.y,imgSize,imgSize);
 
     for (let i=0; i < 20; i++) {
-        let n = i%treeArray.length;
+        let n = int(random(treeArray.length));
         image(treeArray[n], -width/2+i*250, 130, 100, 200);
+        n = int(random(treeArray.length));
         image(treeArray[n], -width/2+i*250, -110, 100, 200);
     }
-    for (let i=0; i < 10; i++) {
+    for (let i=0; i < 20; i++) {
+        if (random(100) < 30) {
+            image(beeImg, -width/2+i*250, -100+sin(frameCount*0.05)*30, 70, 70);
+        }
+        if (random(100) < 30) {
+            image(beeImg, -width/2+i*250, 140+sin(frameCount*0.05)*30, 70, 70);
+        }
+    }
+    for (let i=0; i < 20; i++) {
         image(rengaImg,-width/2+i*250,height/2-25,250,50);
         image(rengaImg,-width/2+i*250,0,250,50);
     }
