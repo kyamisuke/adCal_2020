@@ -6,7 +6,11 @@ var camPosition;
 var treeArray;
 var gravity = 1;
 var velocity = 0;
-var lift = -3;
+var lift = -2;
+var topBeePosition = [], bottomBeePostion = [];
+var winImg, loseImg;
+var isLose = false;
+var isWin = false;
 
 function preload() {
     dogImg = loadImage("https://2.bp.blogspot.com/-6HhC2AY0eps/XLAdB1LYatI/AAAAAAABSU8/6mvfk-9iyAA0mK8q8IKI4tNqTFt0Y1IDgCLcBGAs/s400/fantsy_haneinu.png");
@@ -18,6 +22,8 @@ function preload() {
     orangeTreeImg = loadImage('https://2.bp.blogspot.com/-erVDEPQyD8s/V9vCvycBFkI/AAAAAAAA-AI/AN9Qhdv66lgInYybTTJ_U_m_gcow4t4wQCLcB/s300/tree_simple6.png');
     yellowTreeImg = loadImage('https://4.bp.blogspot.com/-IjzeeTODMe4/V9vCvAoWTUI/AAAAAAAA-AA/AEow268A8TshxTeKNZ05Prhl48qd4r8UgCLcB/s300/tree_simple4.png');
     beeImg = loadImage('https://1.bp.blogspot.com/-YoKsv_evnNM/WaPvcNrj5zI/AAAAAAABGMs/8mlxQhZyRuU_CoPJiSzJ67ir1CNfAulvQCLcBGAs/s400/bug_hachi_doku.png');
+    loseImg = loadImage('https://4.bp.blogspot.com/-ghnZ3is3Kuw/VcMlbOZ1C-I/AAAAAAAAwbs/AYCFlOMb1T4/s400/pose_lose_boy.png');
+    winImg = loadImage('https://1.bp.blogspot.com/-h0QG-0JLyF8/VcMlcb5dEYI/AAAAAAAAwcQ/Rfaj8u-VDsE/s400/pose_win_girl.png');
 }
 
 function setup() {
@@ -34,9 +40,21 @@ function setup() {
     // socket = io.connect('http://localhost:3000');
 
     socket.on('pads', newOperated);
+    socket.on('match', result);
 
     camPosition = new p5.Vector(0, 0, (height / 2) / tan(PI / 6));
     camera(camPosition.x, camPosition.y, camPosition.z, 0, 0, 0, 0, 1, 0);
+
+    for (let i=0; i < 20; i++) {
+        if (random(100) < 30) {
+            let p = new p5.Vector(-width/2+i*250, -100);
+            topBeePosition.push(p);
+        }
+        if (random(100) < 30) {
+            let p = new p5.Vector(-width/2+i*250, 140+sin(frameCount*0.05)*30);
+            bottomBeePostion.push(p);
+        }
+    }
 }
 
 function controllerOperated(pads) {
@@ -74,6 +92,9 @@ function controllerOperated(pads) {
     if (dogPosition.y > -imgSize) {
         dogPosition.y = -imgSize;
     }
+    if (dogPosition.y < -200) {
+        dogPosition.y = -200
+    }
     camPosition.add(Lx,0,0);
     if (camPosition.x < 0) {
         camPosition.x = 0;
@@ -99,6 +120,20 @@ function newOperated(data) {
     rabbitPosition = data;
 }
 
+function youLose() {
+    isLose = true;
+
+    let data = "is Lose";
+
+    socket.emit('match', isLose);
+}
+
+function result(data) {
+    if (data == "is Lose") {
+        isWin = true;
+    }
+}
+
 function draw() {
     randomSeed(39);
     background(16*15+9, 16*14, 16*10+14);
@@ -119,12 +154,16 @@ function draw() {
         n = int(random(treeArray.length));
         image(treeArray[n], -width/2+i*250, -110, 100, 200);
     }
-    for (let i=0; i < 20; i++) {
-        if (random(100) < 30) {
-            image(beeImg, -width/2+i*250, -100+sin(frameCount*0.05)*30, 70, 70);
-        }
-        if (random(100) < 30) {
-            image(beeImg, -width/2+i*250, 140+sin(frameCount*0.05)*30, 70, 70);
+    for (let i=0; i<topBeePosition.length; i++) {
+        image(beeImg,topBeePosition[i].x,topBeePosition[i].y+sin(frameCount*0.05)*30,imgSize,imgSize);
+    }
+    // for (let i=0; i<bottomBeePostion.length; i++) {
+    //     image(beeImg,bottomBeePostion[i].x,bottomBeePostion[i].y+sin(frameCount*0.05)*30,imgSize,imgSize);
+    // }
+    for (let i=0; i<topBeePosition.length; i++) {
+        let d = p5.Vector.dist(topBeePosition[i], dogPosition);
+        if (d < 50) {
+            youLose();
         }
     }
     for (let i=0; i < 20; i++) {
@@ -132,4 +171,18 @@ function draw() {
         image(rengaImg,-width/2+i*250,0,250,50);
     }
 
+    if (isLose == true) {
+        fill(0, 100);
+        noStroke();
+        rectMode(CENTER);
+        rect(dogPosition.x+100,0,width,height);
+        image(loseImg,dogPosition.x+100,0,height,height);
+    }
+    if (isWin == true) {
+        fill(0, 100);
+        noStroke();
+        rectMode(CENTER);
+        rect(dogPosition.x+100,0,width,height);
+        image(winImg,dogPosition.x+100,0,height,height);
+    }
 }

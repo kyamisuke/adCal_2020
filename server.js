@@ -24,4 +24,8 @@ function newConnection(socket) {
         console.log("controllerMsg");
     }
 
+    function matchMsg(data) {
+        socket.broadcast.emit('match', data);
+    }
+
 }
