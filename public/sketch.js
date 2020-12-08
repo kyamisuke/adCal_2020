@@ -2,6 +2,8 @@ var socket;
 var dogImg, rabbitImg, rengaImg;
 const imgSize = 70;
 var dogPosition, rengaPosition;
+var cam;
+var camPosition;
 
 function preload() {
     dogImg = loadImage("https://2.bp.blogspot.com/-6HhC2AY0eps/XLAdB1LYatI/AAAAAAABSU8/6mvfk-9iyAA0mK8q8IKI4tNqTFt0Y1IDgCLcBGAs/s400/fantsy_haneinu.png");
@@ -24,6 +26,12 @@ function setup() {
     // socket = io.connect('http://localhost:3000');
 
     socket.on('pads', newOperated);
+
+    // cam = createCamera();
+    // setCamera(cam);
+    // cam.lookAt(0, 0, 0);
+    camPosition = new p5.Vector(0, 0, (height / 2) / tan(PI / 6));
+    camera(camPosition.x, camPosition.y, camPosition.z, 0, 0, 0, 0, 1, 0);
 }
 
 function controllerOperated(pads) {
@@ -38,7 +46,10 @@ function controllerOperated(pads) {
     var Ry = axes[3]*5;//map(axes[3], -1, 1, 25, 325);
 
     dogPosition.add(Lx,0);
-    image(dogImg,dogPosition.x,dogPosition.y,imgSize,imgSize);
+    if (dogPosition.x < -width/2) {
+        dogPosition.x = -width/2;
+    }
+    image(dogImg,dogPosition.x ,dogPosition.y,imgSize,imgSize);
     for (let i=0; i < 5; i++) {
         image(rengaImg,-width/2+i*250,height/2-25,250,50);
         image(rengaImg,-width/2+i*250,0,250,50);
